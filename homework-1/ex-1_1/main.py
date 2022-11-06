@@ -8,15 +8,16 @@ display_size = 480, 480
 framerate = 10
 
 background_color = '#ffffff'
-cell_color = '#000000'
+cell_color = '#346BA6'
+active_cell_color = '#D55454'
 
 n_cells = 20
 n_generations = 20
 
 rng = np.random.default_rng(69420)
 parent_generation = rng.integers(0, 2, size=(n_cells,))
-grid = np.zeros(shape=(n_generations, n_cells))
-is_frozen = True
+grid = np.zeros(shape=(n_generations, n_cells), dtype='uint8')
+grid[0, :] = parent_generation
 
 grid_margin = 40, 40
 cell_size = (
@@ -29,6 +30,7 @@ cell_inner_size = (
     cell_size[1] - 2*cell_border[1]
 )
 
+is_frozen = True
 
 def main():
     global clock
@@ -72,12 +74,15 @@ def update_sim():
     surf.fill(background_color)
     for gen in range(n_generations):
         for i_cell in range(n_cells):
-            cell = grid[gen, i_cell]
             y = grid_margin[0] + gen * cell_size[0]
             x = grid_margin[1] + i_cell * cell_size[1]
-            surf.fill(color=cell_color, rect=pg.Rect((x, y), cell_size))
-            surf.fill(color=background_color, rect=pg.Rect(
-                (x+cell_border[1], y+cell_border[0]), cell_inner_size))
+            cell_value = grid[gen, i_cell]
+            color = active_cell_color if cell_value else cell_color
+
+            surf.fill(color=color, rect=pg.Rect((x, y), cell_size))
+            #surf.fill(color=background_color, rect=pg.Rect(
+            #    (x+cell_border[1], y+cell_border[0]), cell_inner_size))
+            
 
 
 if __name__ == "__main__":
