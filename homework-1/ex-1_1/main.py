@@ -46,7 +46,6 @@ cell_size = min(
     int((display_size[0] - 2*grid_margin[0])/n_generations),
     int((display_size[1] - 2*grid_margin[1])/n_cells)
 )
-print(cell_size)
 
 rule_number = 184
 rules = decode_rule(rule_number)
@@ -104,7 +103,7 @@ def update_grid(grid, rules, rng):
     left_pattern[1:] = grid[1, :2]
 
     right_pattern = np.zeros(shape=(3,))
-    left_pattern[-1] = rng.integers(0, 2, size=(1,))
+    right_pattern[-1] = rng.integers(0, 2, size=(1,))
     right_pattern[:2] = grid[1, -2:]
 
     grid[0, 0] = rules[tuple(left_pattern)]
