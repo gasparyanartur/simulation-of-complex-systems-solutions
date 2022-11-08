@@ -27,7 +27,7 @@ cell_size = min(
     int((display_size[1] - 2*grid_margin[1])/grid_size[1])
 )
 
-n_nbs_to_remain = (
+n_nbs_to_live = (
     {3}, {2, 3}
 )
 
@@ -71,19 +71,31 @@ def main():
         clock.tick(framerate)
 
 
+def get_nb_range(value, min, max):
+    if value == min:
+        return min, value+2
+    elif value == max:
+        return value-1, max+1
+    else:
+        return value-1, value+2
+
+
 def update_grid(grid):
     new_grid = np.zeros(shape=grid_size, dtype='uint8')
     w, h = grid_size
-    for y in range(1, h-1):
-        for x in range(1, w-1):
+    for y in range(h):
+        for x in range(w):
+            x_start, x_end = get_nb_range(x, 0, w)
+            y_start, y_end = get_nb_range(y, 0, h)
+
             value = grid[y, x]
-            n_nbs = np.sum(grid[y-1:y+2, x-1:x+2]) - 1
+            nbhood = grid[y_start:y_end, x_start:x_end]
+            n_nbs = np.sum(nbhood) - value
+            #print(nbhood, n_nbs)
 
-            if n_nbs not in n_nbs_to_remain[value]:
-                new_grid[y, x] = 1 - value
-
-
-    # TODO - edges
+#            print(n_nbs, n_nbs_to_remain[value])
+            if n_nbs in n_nbs_to_live[value]:
+                new_grid[y, x] = 1
 
     return new_grid
 
