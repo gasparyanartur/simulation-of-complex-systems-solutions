@@ -32,6 +32,7 @@ n_nbs_to_live = (
 )
 
 is_frozen = False
+is_periodic_boundary = True
 
 
 def main():
@@ -63,37 +64,42 @@ def main():
                     case pg.K_ESCAPE:
                         exit(0)
 
+
         if not is_frozen:
-            grid = update_grid(grid)
+            grid = update_grid(grid, is_periodic_boundary)
             render_sim(grid, screen, clock)
 
-        pg.display.update()
         clock.tick(framerate)
 
 
-def get_nb_range(value, min, max):
+def get_nb_range(value, min, max, is_periodic_boundary):
     if value == min:
-        return min, value+2
+        if is_periodic_boundary:
+            return max, min, min+1
+        else:
+            return min, min+1
     elif value == max:
-        return value-1, max+1
+        if is_periodic_boundary:
+            return max-1, max, min
+        else:
+            return max-1, max
     else:
-        return value-1, value+2
+        return value-1, value, value+1
 
 
-def update_grid(grid):
+def update_grid(grid, is_periodic_boundary):
     new_grid = np.zeros(shape=grid_size, dtype='uint8')
     w, h = grid_size
     for y in range(h):
         for x in range(w):
-            x_start, x_end = get_nb_range(x, 0, w)
-            y_start, y_end = get_nb_range(y, 0, h)
+            xs = get_nb_range(x, 0, w-1, is_periodic_boundary)
+            ys = get_nb_range(y, 0, h-1, is_periodic_boundary)
+            nbgrid = np.ix_(ys, xs)
 
             value = grid[y, x]
-            nbhood = grid[y_start:y_end, x_start:x_end]
+            nbhood = grid[nbgrid]
             n_nbs = np.sum(nbhood) - value
-            #print(nbhood, n_nbs)
 
-#            print(n_nbs, n_nbs_to_remain[value])
             if n_nbs in n_nbs_to_live[value]:
                 new_grid[y, x] = 1
 
@@ -114,6 +120,9 @@ def render_sim(grid: np.ndarray, screen: pg.Surface, clock: pg.time.Clock):
 
             screen.fill(color=color, rect=pg.Rect(
                 (p_x, p_y), (cell_size, cell_size)))
+
+    pg.display.update()
+
 
 
 if __name__ == "__main__":
