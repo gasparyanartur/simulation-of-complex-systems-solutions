@@ -6,6 +6,33 @@ def create_grid(grid_size, rng):
     return rng.integers(0, 2, size=grid_size)
 
 
+def are_configs_identical(config_1, config_2):
+    return np.all(config_1 == config_2)
+
+
+def shift_config(config, shift):
+    h, w = config.shape
+    new_config = np.zeros(config.shape)
+
+    for y in range(h):
+        for x in range(w):
+            new_config[(y+shift[0])%h, (x+shift[1])%w] = config[y, x]
+    
+    return new_config
+
+
+def find_config_shift(grid, config):
+    h, w = grid.shape
+    for y in range(h):
+        for x in range(w):
+            if y == 0 and x == 0:
+                continue
+
+            conf_shift = shift_config(y, x)
+            # TODO: Fix logic
+
+
+
 class Configs:
     block = np.array([
         [0, 0, 0, 0, 0, 0],
