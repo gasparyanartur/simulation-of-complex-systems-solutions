@@ -2,37 +2,6 @@ import pygame as pg
 import numpy as np
 
 
-def create_grid(grid_size, rng):
-    return rng.integers(0, 2, size=grid_size)
-
-
-def are_configs_identical(config_1, config_2):
-    return np.all(config_1 == config_2)
-
-
-def shift_config(config, shift):
-    h, w = config.shape
-    new_config = np.zeros(config.shape)
-
-    for y in range(h):
-        for x in range(w):
-            new_config[(y+shift[0])%h, (x+shift[1])%w] = config[y, x]
-    
-    return new_config
-
-
-def find_config_shift(grid, config):
-    h, w = grid.shape
-    for y in range(h):
-        for x in range(w):
-            if y == 0 and x == 0:
-                continue
-
-            conf_shift = shift_config(y, x)
-            # TODO: Fix logic
-
-
-
 class Configs:
     block = np.array([
         [0, 0, 0, 0, 0, 0],
@@ -113,8 +82,8 @@ class Configs:
         [0, 0, 0, 1, 1, 1],
         [0, 0, 0, 1, 0, 0],
         [0, 0, 0, 0, 1, 0],
-    ], dtype='uint8')    
-    
+    ], dtype='uint8')
+
     glider_2 = np.array([
         [0, 0, 0, 0, 1, 0],
         [0, 0, 0, 1, 0, 0],
@@ -131,8 +100,8 @@ class Configs:
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
-    ], dtype='uint8')    
-    
+    ], dtype='uint8')
+
     glider_4 = np.array([
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0],
@@ -141,6 +110,57 @@ class Configs:
         [0, 0, 1, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
     ], dtype='uint8')
+
+
+def create_grid(grid_size, rng):
+    return rng.integers(0, 2, size=grid_size)
+
+
+def shift_config(grid, config_pos, config_size, shift):
+    y, x = config_pos
+    h, w = config_size
+    dy, dx = shift
+    config = grid[y:y+h, x:x+w]
+
+    grid[y:y+h, x:x+w] = 0
+    grid[y+dy:y+dy+h, x+dx:x+dx+w] = config
+
+    return grid
+
+def find_config_shift(start_grid, new_grid, start_pos, config_size):
+    gh, gw = start_grid.shape
+    h, w = config_size
+    y, x = start_pos
+
+    assert gw >= 3*w and gh >= 3*h
+
+    for dy in range(-gh, gh+1):
+        for dx in range(-gw, gw+1):
+            shifted_grid = shift_config(start_grid, (y, x), config_size, (dy, dx))
+            if np.all(shifted_grid == new_grid):
+                return (dy, dx)
+            
+    return None
+
+
+def find_pattern_in_grid(rng, config_size, max_gen):
+    config = rng.integers(0, 2, size=config_size)
+    grid_size = (3*config_size[0], 3*config_size[1]) 
+    grid = np.zeros(shape=grid_size, dtype='int')
+    start_pos = config_size
+    grid[start_pos[0]:start_pos[0]+config_size[0],
+         start_pos[1]:start_pos[1]:config_size[1]] = config
+    start_grid = grid
+    
+
+    for gen in range(max_gen):
+        grid = update_grid(grid, grid_size, False)
+        d_pos = find_config_shift(start_grid, grid, start_pos, config_size)
+        if d_pos:
+            return gen, d_pos, grid
+    
+    return None
+
 
 
 rng = np.random.default_rng()
