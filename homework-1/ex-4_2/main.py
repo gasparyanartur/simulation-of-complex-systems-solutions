@@ -132,7 +132,6 @@ def find_config_shift(grid, config, config_size):
 
     for y in range(0, 2*h):
         for x in range(0, 2*w):
-            #if np.all(grid[y:y+h, x:x+w] == config):
             if np.array_equal(grid[y:y+h, x:x+w], config):
                 return y, x
 
