@@ -127,40 +127,48 @@ def shift_config(grid, config_pos, config_size, shift):
 
     return grid
 
-def find_config_shift(start_grid, new_grid, start_pos, config_size):
-    gh, gw = start_grid.shape
+def find_config_shift(grid, config, config_size): 
     h, w = config_size
-    y, x = start_pos
 
-    assert gw >= 3*w and gh >= 3*h
+    for y in range(0, 2*h):
+        for x in range(0, 2*w):
+            #if np.all(grid[y:y+h, x:x+w] == config):
+            if np.array_equal(grid[y:y+h, x:x+w], config):
+                return y, x
 
-    for dy in range(-gh, gh+1):
-        for dx in range(-gw, gw+1):
-            shifted_grid = shift_config(start_grid, (y, x), config_size, (dy, dx))
-            if np.all(shifted_grid == new_grid):
-                return (dy, dx)
-            
     return None
 
 
 def find_pattern_in_grid(rng, config_size, max_gen):
     config = rng.integers(0, 2, size=config_size)
+    config[:, 0] = 0
+    config[:, -1] = 0
+    config[0, :] = 0
+    config[-1, :] = 0
+
     grid_size = (3*config_size[0], 3*config_size[1]) 
     grid = np.zeros(shape=grid_size, dtype='int')
     start_pos = config_size
     grid[start_pos[0]:start_pos[0]+config_size[0],
-         start_pos[1]:start_pos[1]:config_size[1]] = config
-    start_grid = grid
+         start_pos[1]:start_pos[1]+config_size[1]] = config
     
 
-    for gen in range(max_gen):
+    for gen in range(1, max_gen):
         grid = update_grid(grid, grid_size, False)
-        d_pos = find_config_shift(start_grid, grid, start_pos, config_size)
-        if d_pos:
-            return gen, d_pos, grid
+        pos = find_config_shift(grid, config, config_size)
+        if pos:
+            shift = (pos[0]-start_pos[0], pos[1]-start_pos[1])
+            return gen, shift, config, grid
     
     return None
 
+
+def find_patterns_in_grid(rng, n_iterations, max_generation, config_size):
+    for i in range(n_iterations):
+        res = find_pattern_in_grid(rng, config_size, max_generation)
+        if res:
+            gen, shift, config, grid = res
+            # TODO
 
 
 rng = np.random.default_rng()
