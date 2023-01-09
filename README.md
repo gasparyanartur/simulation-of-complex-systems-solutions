@@ -16,7 +16,7 @@ Feel free to create a pull request if you want to add your solution to this repo
 |2|Not done|
 |3|Not done|
 |4|Finished exercises|
-|5|Finished exercises|
+|5|Partial exercises|
 |6|Abandoned|
 |7|Not done|
 |8|Not done|
